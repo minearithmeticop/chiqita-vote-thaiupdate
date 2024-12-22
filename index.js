@@ -4,6 +4,9 @@ const axios = require("axios");
 const app = express();
 const port = 3000;
 
+// Serve static files
+app.use(express.static('public'));
+
 // Global variable to control voting status
 let isVotingActive = false;
 let votingProcess = null;
@@ -75,7 +78,7 @@ const createApiWithRandomAgent = () => {
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-const randomDelay = () => Math.floor(Math.random() * (1000 - 1000 + 1)) + 1000;
+const randomDelay = () => Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
 
 async function automateVoting() {
     const baseFetchURL = "https://polls.polldaddy.com/vote-js.php?p=14790988&b=0&a=65657660,&o=&va=16&cookie=0&tags=14790988-src:poll-oembed-simple&n=";
@@ -124,8 +127,7 @@ async function automateVoting() {
             console.log(`โหวตสำเร็จ! ✅ [Thread ${process.pid}] - ${votes}`);
             totalVotes++;
             lastVoteTime = new Date();
-            return true;
-
+            return { success: true, votes };
         } else {
             throw new Error("การโหวตล้มเหลว - ไม่สามารถส่งได้");
         }
@@ -145,6 +147,21 @@ async function startVoting() {
     })();
 }
 
+// API Endpoint
+app.get('/api/vote', async (req, res) => {
+    try {
+        const result = await automateVoting();
+        res.json({
+            status: 'success',
+            ...result
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+});
 
 // API Endpoints
 app.get('/start', (req, res) => {
@@ -172,6 +189,11 @@ app.get('/status', (req, res) => {
         lastVoteTime: lastVoteTime ? lastVoteTime.toLocaleString() : null,
         uptime: process.uptime()
     });
+});
+
+// Serve the HTML page
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start the server

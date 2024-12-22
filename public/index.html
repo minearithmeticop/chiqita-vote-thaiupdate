@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Auto Voting Control</title>
+    <script>
+      async function vote() {
+        const button = document.getElementById("voteButton");
+        const status = document.getElementById("status");
+
+        try {
+          button.disabled = true;
+          status.textContent = "กำลังโหวต...";
+
+          const response = await fetch("/api/vote");
+          const data = await response.json();
+
+          if (data.status === "success") {
+            status.textContent = `โหวตสำเร็จ! จำนวนโหวตปัจจุบัน: ${data.votes}`;
+          } else {
+            status.textContent = `เกิดข้อผิดพลาด: ${data.message}`;
+          }
+        } catch (error) {
+          status.textContent = `เกิดข้อผิดพลาด: ${error.message}`;
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      // Auto vote function
+      let isAutoVoting = false;
+      let autoVoteInterval;
+
+      function toggleAutoVote() {
+        const autoButton = document.getElementById("autoVoteButton");
+        const status = document.getElementById("status");
+
+        if (!isAutoVoting) {
+          isAutoVoting = true;
+          autoButton.textContent = "หยุดโหวตอัตโนมัติ";
+          status.textContent = "เริ่มโหวตอัตโนมัติ...";
+
+          // โหวตทุก 15 วินาที
+          autoVoteInterval = setInterval(vote, 5000);
+          vote(); // เริ่มโหวตทันที
+        } else {
+          isAutoVoting = false;
+          autoButton.textContent = "เริ่มโหวตอัตโนมัติ";
+          status.textContent = "หยุดโหวตอัตโนมัติแล้ว";
+          clearInterval(autoVoteInterval);
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+        padding: 0 20px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      #status {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>ระบบโหวตอัตโนมัติ</h1>
+    <button id="voteButton" onclick="vote()">โหวต 1 ครั้ง</button>
+    <button id="autoVoteButton" onclick="toggleAutoVote()">
+      เริ่มโหวตอัตโนมัติ
+    </button>
+    <div id="status">รอการทำงาน...</div>
+  </body>
+</html>
