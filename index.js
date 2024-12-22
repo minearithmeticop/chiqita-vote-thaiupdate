@@ -1,4 +1,14 @@
+const express = require('express');
 const axios = require("axios");
+
+const app = express();
+const port = 3000;
+
+// Global variable to control voting status
+let isVotingActive = false;
+let votingProcess = null;
+let totalVotes = 0;
+let lastVoteTime = null;
 
 const randomUserAgent = () => {
     const agents = [
@@ -112,6 +122,8 @@ async function automateVoting() {
             const match = voteResponse.data.match(/Chiquita[^(]+\((\d+,\d+)/);
             const votes = match ? match[1] : 'N/A';
             console.log(`โหวตสำเร็จ! ✅ [Thread ${process.pid}] - ${votes}`);
+            totalVotes++;
+            lastVoteTime = new Date();
             return true;
 
         } else {
@@ -123,9 +135,52 @@ async function automateVoting() {
     }
 }
 
-(async () => {
-    for (let i = 0; i < 10000000; i++) {
-        console.log(`เริ่มโหวตครั้งที่ ${i + 1}`);
-        await automateVoting();
+async function startVoting() {
+    isVotingActive = true;
+
+    votingProcess = (async () => {
+        while (isVotingActive) {
+            await automateVoting();
+        }
+    })();
+}
+
+
+// API Endpoints
+app.get('/start', (req, res) => {
+    if (isVotingActive) {
+        res.json({ status: 'error', message: 'Voting process is already running' });
+    } else {
+        startVoting();
+        res.json({ status: 'success', message: 'Voting process started' });
     }
-})();
+});
+
+app.get('/stop', (req, res) => {
+    if (!isVotingActive) {
+        res.json({ status: 'error', message: 'No voting process is running' });
+    } else {
+        isVotingActive = false;
+        res.json({ status: 'success', message: 'Voting process will stop after current vote' });
+    }
+});
+
+app.get('/status', (req, res) => {
+    res.json({
+        isActive: isVotingActive,
+        totalVotes,
+        lastVoteTime: lastVoteTime ? lastVoteTime.toLocaleString() : null,
+        uptime: process.uptime()
+    });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`
+Available endpoints:
+- GET /start  : Start voting process
+- GET /stop   : Stop voting process
+- GET /status : Get current status
+    `);
+});
