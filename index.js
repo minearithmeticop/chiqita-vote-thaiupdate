@@ -81,7 +81,7 @@ const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const randomDelay = () => Math.floor(Math.random() * (1000 - 500 + 1)) + 500;
 
 async function automateVoting() {
-    const baseFetchURL = "https://polls.polldaddy.com/vote-js.php?p=14790988&b=0&a=65657660,&o=&va=16&cookie=0&tags=14790988-src:poll-oembed-simple&n=";
+    const baseFetchURL = "https://polls.polldaddy.com/vote-js.php?p=14890595&b=0&a=66059327,&o=&va=16&cookie=0&tags=14890595-src:poll-oembed-simple&n=";
 
     try {
         // Step 1: Random User-Agent
@@ -90,7 +90,7 @@ async function automateVoting() {
         // Step 2: Get n value
         await sleep(randomDelay());
         const timestamp = Date.now();
-        const url = `https://poll.fm/n/31ca8bcfb9002a437240cfd87e440570/14790988?${timestamp}`;
+        const url = `https://poll.fm/n/2d370c3ad34459c1d834f68aef97491b/14890595?${timestamp}`;
 
         const nResponse = await api.get(url);
         const nData = nResponse.data;
@@ -101,7 +101,7 @@ async function automateVoting() {
 
         // // Step 3: Get Math Test
         await sleep(randomDelay());
-        const fetchURL = `${baseFetchURL}${n}&url=https%3A//www.thaiupdate.info/female-star-of-the-year-group-2/`;
+        const fetchURL = `${baseFetchURL}${n}&url=https%3A//www.thaiupdate.info/female-star-of-the-year-final/`;
         const mathsResponse = await api.get(fetchURL);
         const mathsHTML = mathsResponse.data;
 
@@ -117,7 +117,7 @@ async function automateVoting() {
 
         // Step 4: Submit vote
         await sleep(randomDelay());
-        const voteURL = `${baseFetchURL}${n}&url=https%3A//www.thaiupdate.info/female-star-of-the-year-group-2/&maths=1&answer=${encodeURIComponent(answer)}&maths_key=${encodeURIComponent(mathsKey)}`;
+        const voteURL = `${baseFetchURL}${n}&url=https%3A//www.thaiupdate.info/female-star-of-the-year-final/&maths=1&answer=${encodeURIComponent(answer)}&maths_key=${encodeURIComponent(mathsKey)}`;
         const voteResponse = await api.get(voteURL);
 
 
